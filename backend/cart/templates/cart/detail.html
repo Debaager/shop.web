@@ -1,0 +1,46 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<h2>Корзина</h2>
+<table class='table mt-3'>
+    <thead><tr><th>Товар</th><th>Цена</th><th>Кол-во</th><th>Сумма</th><th></th></tr></thead>
+    <tbody>
+    {% for item in items %}
+    <tr data-id='{{ item.product.id }}' data-price='{{ item.product.price }}'>
+        <td>{{ item.product.name }}</td>
+        <td>{{ item.product.price }} ₽</td>
+        <td><input type='number' class='form-control form-control-sm qty' value='{{ item.quantity }}' style='width:80px'></td>
+        <td class='subtotal'>{{ item.subtotal }} ₽</td>
+        <td><button class='btn btn-sm btn-danger remove'>Удалить</button></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan='5'>Корзина пуста</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+<h4>Итого: <span id='total'>{{ total }}</span> ₽</h4>
+<form method='post' action='{% url "checkout" %}'>
+    {% csrf_token %}
+    <button class='btn btn-success' {% if not items %}disabled{% endif %}>Оформить покупку</button>
+</form>
+<script>
+function recalc() {
+    let total = 0;
+    document.querySelectorAll('tbody tr[data-id]').forEach(tr => {
+        let price = parseFloat(tr.dataset.price);
+        let qty = parseInt(tr.querySelector('.qty').value) || 1;
+        tr.querySelector('.subtotal').textContent = (price*qty).toFixed(2) + ' ₽';
+        total += price*qty;
+    });
+    document.getElementById('total').textContent = total.toFixed(2);
+}
+document.querySelectorAll('.qty').forEach(i => i.onchange = e => {
+    let tr = e.target.closest('tr');
+    fetch('/cart/update/' + tr.dataset.id + '/', {method: 'POST', headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/x-www-form-urlencoded'}, body: 'quantity=' + e.target.value});
+    recalc();
+});
+document.querySelectorAll('.remove').forEach(b => b.onclick = e => {
+    let tr = e.target.closest('tr');
+    fetch('/cart/remove/' + tr.dataset.id + '/', {method: 'POST', headers: {'X-CSRFToken': getCookie('csrftoken')}}).then(() => { tr.remove(); recalc(); });
+});
+</script>
+{% endblock %}

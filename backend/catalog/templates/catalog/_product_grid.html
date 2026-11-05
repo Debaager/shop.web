@@ -1,0 +1,14 @@
+﻿<div class='row'>
+{% for p in products %}
+<div class='col-md-4 mb-3'>
+    <div class='card h-100'>
+        <div class='card-body'>
+            <h5 class='card-title'>{{ p.name }}</h5>
+            <p class='text-muted'>{{ p.category }}</p>
+            <p class='fw-bold'>{{ p.price }} ₽</p>
+            <button class='btn btn-primary btn-add' data-id='{{ p.id }}'>В корзину</button>
+        </div>
+    </div>
+</div>
+{% empty %}<p>Товаров нет.</p>{% endfor %}
+</div>

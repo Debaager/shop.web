@@ -1,0 +1,27 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<div class='row mb-3'>
+    <div class='col-md-4'>
+        <select id='category' class='form-select'>
+            <option value=''>Все категории</option>
+            {% for c in categories %}<option value='{{ c }}'>{{ c }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class='col-md-4'>
+        <select id='sort' class='form-select'>
+            <option value='name'>Название ↑</option>
+            <option value='-name'>Название ↓</option>
+            <option value='price'>Цена ↑</option>
+            <option value='-price'>Цена ↓</option>
+        </select>
+    </div>
+</div>
+<div id='grid'>{% include 'catalog/_product_grid.html' %}</div>
+<script>
+document.getElementById('category').onchange = document.getElementById('sort').onchange = function() {
+    let params = new URLSearchParams({category: document.getElementById('category').value, sort: document.getElementById('sort').value});
+    fetch('/catalog/?' + params, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+    .then(r=>r.json()).then(d=>document.getElementById('grid').innerHTML = d.html);
+};
+</script>
+{% endblock %}
